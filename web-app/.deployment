@@ -1,0 +1,17 @@
+# Azure App Service Deployment Configuration
+
+# Build configuration
+SCM_DO_BUILD_DURING_DEPLOYMENT=true
+
+# Node.js version
+WEBSITE_NODE_DEFAULT_VERSION=~20
+
+# Enable logging
+SCM_TRACE_LEVEL=4
+
+# Application settings (these will be set in Azure Portal)
+# CLIENT_ID=
+# TENANT_ID=
+# AUTHORITY=
+# REDIRECT_URI=
+# API_SCOPES=

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise SSO Demo - Web App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Enterprise SSO Demo</h1>
+            <p class="subtitle">Web Application with Entra ID SSO</p>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Authenticating...</p>
+        </div>
+
+        <!-- Not Authenticated View -->
+        <div id="unauthenticated-view" class="view">
+            <div class="card">
+                <h2>Welcome</h2>
+                <p>This web application demonstrates seamless authentication integration with enterprise mobile applications.</p>
+                
+                <div class="info-box">
+                    <h3>How it works:</h3>
+                    <ul>
+                        <li>🔐 Authenticates using Microsoft Entra ID (Azure AD)</li>
+                        <li>📱 Supports SSO from native Android app via Chrome Custom Tabs</li>
+                        <li>🔄 Uses MSAL.js for browser-based authentication</li>
+                        <li>✅ Falls back to standard web authentication if needed</li>
+                    </ul>
+                </div>
+
+                <button id="loginButton" class="btn btn-primary">Sign In with Microsoft</button>
+                
+                <div class="debug-info" id="debug-info" style="display: none;">
+                    <h4>Debug Information:</h4>
+                    <pre id="debug-content"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authenticated View -->
+        <div id="authenticated-view" class="view" style="display: none;">
+            <div class="card">
+                <div class="user-info">
+                    <div class="avatar">
+                        <span id="userInitials">?</span>
+                    </div>
+                    <div class="user-details">
+                        <h2 id="userName">Loading...</h2>
+                        <p id="userEmail">Loading...</p>
+                    </div>
+                </div>
+
+                <div class="success-message">
+                    <span class="success-icon">✓</span>
+                    <p>Successfully authenticated!</p>
+                </div>
+
+                <div class="button-group">
+                    <button id="getProfileButton" class="btn btn-secondary">Get Profile Data</button>
+                    <button id="getDataButton" class="btn btn-secondary">Fetch Protected Data</button>
+                    <button id="logoutButton" class="btn btn-outline">Sign Out</button>
+                </div>
+
+                <div id="dataDisplay" class="data-display" style="display: none;">
+                    <h3>API Response:</h3>
+                    <pre id="dataContent"></pre>
+                </div>
+
+                <div class="token-info">
+                    <details>
+                        <summary>View Token Information</summary>
+                        <div id="tokenInfo" class="token-details">
+                            <p><strong>Token Type:</strong> <span id="tokenType">-</span></p>
+                            <p><strong>Expires:</strong> <span id="tokenExpiry">-</span></p>
+                            <p><strong>Scopes:</strong> <span id="tokenScopes">-</span></p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">
+                Enterprise SSO Authentication Proof of Concept
+            </p>
+            <div class="status" id="status">
+                <span class="status-indicator"></span>
+                <span id="statusText">Initializing...</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MSAL.js Browser Library (served locally) -->
+    <script src="/libs/msal/msal-browser.min.js"></script>
+    
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
