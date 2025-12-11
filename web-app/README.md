@@ -41,7 +41,7 @@ Edit `.env` and fill in your Azure AD app registration details:
 ```env
 CLIENT_ID=your-client-id-here
 TENANT_ID=your-tenant-id-here
-REDIRECT_URI=http://localhost:3000/auth/callback
+REDIRECT_URI=http://localhost:3000
 AUTHORITY=https://login.microsoftonline.com/your-tenant-id-here
 API_SCOPES=User.Read,profile,openid,email
 PORT=3000
@@ -135,8 +135,8 @@ az webapp config appsettings set \
     CLIENT_ID="your-client-id" \
     TENANT_ID="your-tenant-id" \
     AUTHORITY="https://login.microsoftonline.com/your-tenant-id" \
-    REDIRECT_URI="https://enterprise-auth-demo.azurewebsites.net/auth/callback" \
-    API_SCOPES="User.Read,profile,openid,email"
+    REDIRECT_URI="https://enterprise-auth-demo.azurewebsites.net" \
+    API_SCOPES="User.Read,profile,openid,email" \
 
 # Deploy application
 az webapp up \
@@ -296,7 +296,7 @@ To test SSO from native app:
 | `CLIENT_ID` | Azure AD application (client) ID | `12345678-1234-1234-1234-123456789abc` |
 | `TENANT_ID` | Azure AD directory (tenant) ID | `87654321-4321-4321-4321-cba987654321` |
 | `AUTHORITY` | Azure AD authority URL | `https://login.microsoftonline.com/<tenant-id>` |
-| `REDIRECT_URI` | OAuth redirect URI | `https://your-app.azurewebsites.net/auth/callback` |
+| `REDIRECT_URI` | OAuth redirect URI | `https://your-app.azurewebsites.net` |
 | `API_SCOPES` | Required API scopes (comma-separated) | `User.Read,profile,openid` |
 | `PORT` | Server port | `3000` |
 | `NODE_ENV` | Environment | `production` |

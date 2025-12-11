@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #ff7900;
+    --primary-color: #0078d4;
     --secondary-color: #333333;
     --success-color: #4caf50;
     --error-color: #f44336;
@@ -100,9 +100,9 @@ header h1 {
 }
 
 .btn-primary:hover {
-    background: #e66d00;
+    background: #005a9e;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 121, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
 }
 
 .btn-secondary {
@@ -166,7 +166,7 @@ header h1 {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), #ffa040);
+    background: linear-gradient(135deg, var(--primary-color), #50a0e0);
     display: flex;
     align-items: center;
     justify-content: center;

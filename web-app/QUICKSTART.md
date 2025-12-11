@@ -32,7 +32,7 @@ Visit: http://localhost:3000
 1. Go to [Azure Portal](https://portal.azure.com) → Azure AD → App registrations
 2. Create new registration:
    - Name: `Enterprise Auth Demo - Web`
-   - Redirect URI: `http://localhost:3000/auth/callback` (SPA type)
+   - Redirect URI: `http://localhost:3000` (SPA type)
 3. Add API permissions: `User.Read`, `profile`, `openid`
 4. Copy Client ID and Tenant ID to `.env`
 

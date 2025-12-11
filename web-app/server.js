@@ -108,7 +108,7 @@ app.get('/api/config', (req, res) => {
   res.json({
     clientId: process.env.CLIENT_ID,
     authority: process.env.AUTHORITY || `https://login.microsoftonline.com/${process.env.TENANT_ID}`,
-    redirectUri: process.env.REDIRECT_URI || `http://localhost:${PORT}/auth/callback`,
+    redirectUri: process.env.REDIRECT_URI || `http://localhost:${PORT}`,
     scopes: process.env.API_SCOPES 
       ? process.env.API_SCOPES.split(',').map(s => s.trim())
       : ['User.Read', 'profile', 'openid'],

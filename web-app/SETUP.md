@@ -55,7 +55,7 @@ Fill in the registration form:
   - Select "Accounts in this organizational directory only (Single tenant)"
 - **Redirect URI**: 
   - Platform: **Single-page application (SPA)**
-  - URI: `http://localhost:3000/auth/callback`
+  - URI: `http://localhost:3000`
   - Click "Add"
 
 Click **Register** to create the app.
@@ -106,8 +106,10 @@ After deploying to Azure, add the production redirect URI:
 
 1. Go back to **Authentication**
 2. Under **Single-page application** platform, click **+ Add URI**
-3. Add: `https://your-app-name.azurewebsites.net/auth/callback`
+3. Add: `https://your-app-name.azurewebsites.net`
 4. Click **Save**
+
+**Important**: If you previously added `/auth/callback` to your redirect URIs, you should remove it and use just the root path instead.
 
 ---
 
@@ -140,7 +142,7 @@ Edit `.env` with your Azure AD values:
 CLIENT_ID=your-application-client-id-here
 TENANT_ID=your-directory-tenant-id-here
 AUTHORITY=https://login.microsoftonline.com/your-tenant-id-here
-REDIRECT_URI=http://localhost:3000/auth/callback
+REDIRECT_URI=http://localhost:3000
 
 # API Scopes
 API_SCOPES=User.Read,profile,openid,email
@@ -233,7 +235,31 @@ az webapp create \
 
 **Note**: The app name must be globally unique. If `enterprise-auth-demo-web` is taken, try adding your initials or a number.
 
-#### 6. Configure Application Settings
+#### 6. Configure Build Settings
+
+Configure Azure App Service to automatically build and install dependencies during deployment:
+
+```bash
+az webapp config appsettings set \
+  --name enterprise-auth-demo-web \
+  --resource-group enterprise-auth-rg \
+  --settings \
+    SCM_DO_BUILD_DURING_DEPLOYMENT=true \
+    ENABLE_ORYX_BUILD=true
+```
+
+Set a custom startup command to ensure dependencies are installed:
+
+```bash
+az webapp config set \
+  --name enterprise-auth-demo-web \
+  --resource-group enterprise-auth-rg \
+  --startup-file "npm install && npm start"
+```
+
+**Note**: This startup command installs dependencies on each app start. For production, consider using a proper CI/CD pipeline that builds during deployment instead.
+
+#### 7. Configure Application Settings
 
 ```bash
 az webapp config appsettings set \
@@ -243,25 +269,52 @@ az webapp config appsettings set \
     CLIENT_ID="your-client-id" \
     TENANT_ID="your-tenant-id" \
     AUTHORITY="https://login.microsoftonline.com/your-tenant-id" \
-    REDIRECT_URI="https://enterprise-auth-demo-web.azurewebsites.net/auth/callback" \
+    REDIRECT_URI="https://enterprise-auth-demo-web.azurewebsites.net" \
     API_SCOPES="User.Read,profile,openid,email" \
     NODE_ENV="production"
 ```
 
 Replace the placeholders with your actual Azure AD values.
 
-#### 7. Deploy Application
+#### 8. Deploy Application
 
 From the `web-app` directory:
 
 ```bash
-az webapp up \
+# Create deployment package (exclude unnecessary files)
+zip -r deploy.zip . \
+  -x "*.git*" \
+  -x "*.env" \
+  -x "*.env.*" \
+  -x "node_modules/*" \
+  -x ".vscode/*" \
+  -x "*.log" \
+  -x "*.md" \
+  -x "deploy.sh" \
+  -x "deploy.tar.gz" \
+  -x "deploy.zip"
+
+# Deploy using ZIP deployment (recommended)
+az webapp deploy \
   --name enterprise-auth-demo-web \
   --resource-group enterprise-auth-rg \
-  --location uksouth
+  --src-path deploy.zip \
+  --type zip \
+  --async true
 ```
 
-#### 8. Enable HTTPS Only
+**Note**: The deployment will take a few minutes. The app installs dependencies on startup due to the custom startup command.
+
+**Alternative (Using deployment script)**:
+```bash
+# Make the script executable
+chmod +x deploy.sh
+
+# Run the deployment script
+./deploy.sh
+```
+
+#### 9. Enable HTTPS Only
 
 ```bash
 az webapp update \
@@ -270,7 +323,19 @@ az webapp update \
   --https-only true
 ```
 
-#### 9. View Application
+#### 10. Restart the Application
+
+After deploying for the first time or changing configuration:
+
+```bash
+az webapp restart \
+  --name enterprise-auth-demo-web \
+  --resource-group enterprise-auth-rg
+```
+
+**Note**: The first startup will take 1-2 minutes as dependencies are installed.
+
+#### 11. View Application
 
 ```bash
 az webapp browse \
@@ -317,7 +382,7 @@ Install these VS Code extensions:
    CLIENT_ID = your-client-id
    TENANT_ID = your-tenant-id
    AUTHORITY = https://login.microsoftonline.com/your-tenant-id
-   REDIRECT_URI = https://your-app-name.azurewebsites.net/auth/callback
+   REDIRECT_URI = https://your-app-name.azurewebsites.net
    API_SCOPES = User.Read,profile,openid,email
    NODE_ENV = production
    ```
@@ -362,7 +427,7 @@ Right-click the web app → **Restart**
    Value: https://login.microsoftonline.com/your-tenant-id
    
    Name: REDIRECT_URI
-   Value: https://enterprise-auth-demo-web.azurewebsites.net/auth/callback
+   Value: https://enterprise-auth-demo-web.azurewebsites.net
    
    Name: API_SCOPES
    Value: User.Read,profile,openid,email
@@ -581,13 +646,37 @@ Your backend API needs to implement:
 
 ### Deployment Issues
 
+#### Container didn't respond on port 8080 / Cannot find module errors
+
+**Solution**:
+This typically means dependencies weren't installed. Ensure:
+1. Build settings are configured:
+   ```bash
+   az webapp config appsettings set \
+     --name enterprise-auth-demo-web \
+     --resource-group enterprise-auth-rg \
+     --settings \
+       SCM_DO_BUILD_DURING_DEPLOYMENT=true \
+       ENABLE_ORYX_BUILD=true
+   ```
+2. Startup command is set to install dependencies:
+   ```bash
+   az webapp config set \
+     --name enterprise-auth-demo-web \
+     --resource-group enterprise-auth-rg \
+     --startup-file "npm install && npm start"
+   ```
+3. Restart the app after configuration changes
+4. Wait 1-2 minutes for first startup (dependencies are being installed)
+
 #### App shows "Your App Service app is up and running"
 
 **Solution**:
-1. Check if `npm install` ran successfully
+1. Check if `npm install` ran successfully in logs
 2. Verify `server.js` is in the root of deployment
 3. Check Application Logs in Azure Portal
 4. Ensure startup command is set correctly
+5. Verify `package.json` has a valid `start` script
 
 #### Environment variables not working
 
@@ -611,18 +700,36 @@ Your backend API needs to implement:
 
 ### Checking Logs
 
+#### Enable Application Logging
+
+First, enable container logging to see detailed startup logs:
+
+```bash
+az webapp log config \
+  --name enterprise-auth-demo-web \
+  --resource-group enterprise-auth-rg \
+  --docker-container-logging filesystem
+```
+
 #### Azure Portal
 
 1. Go to your App Service
 2. Select **Log stream** from left menu
-3. Watch real-time logs
+3. Watch real-time logs (useful for debugging startup issues)
 
 #### Azure CLI
 
 ```bash
+# Tail live logs
 az webapp log tail \
   --name enterprise-auth-demo-web \
   --resource-group enterprise-auth-rg
+
+# View specific provider logs
+az webapp log tail \
+  --name enterprise-auth-demo-web \
+  --resource-group enterprise-auth-rg \
+  --provider filesystem
 ```
 
 #### Download Logs
@@ -632,6 +739,14 @@ az webapp log download \
   --name enterprise-auth-demo-web \
   --resource-group enterprise-auth-rg \
   --log-file logs.zip
+```
+
+#### Check Health Endpoint
+
+Quick way to verify the app is running:
+
+```bash
+curl https://enterprise-auth-demo-web.azurewebsites.net/api/health
 ```
 
 ---
